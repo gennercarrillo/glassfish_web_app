@@ -11,8 +11,6 @@ sudo update-alternatives --config java
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 ```
 
----
-
 # 2. Instalar GlassFish 7.0.12
 
 ```bash
@@ -21,8 +19,6 @@ unzip glassfish-7.0.12.zip -d /workspaces/
 export GLASSFISH_HOME="/workspaces/glassfish7"
 export PATH="$GLASSFISH_HOME/bin:$PATH"
 ```
-
----
 
 # 3. Configurar MySQL
 
@@ -41,8 +37,6 @@ sudo mysql -u ejemplo_user -pejemplo_pass ejemplo_db -e \
     email VARCHAR(50)
 )"
 ```
-
----
 
 # 4. Configurar Connection Pool en GlassFish
 
@@ -70,9 +64,9 @@ asadmin create-jdbc-resource --connectionpoolid mysql-ejemplo-pool jdbc/miDB
 asadmin ping-connection-pool mysql-ejemplo-pool
 ```
 
----
-
 # 5. Estructura del Proyecto y Archivos
+
+Crea exactamente estos archivos con el contenido que compartiste:
 
 ```
 src/
@@ -87,7 +81,8 @@ src/
             └── classes/ (se creará al compilar)
 ```
 
-### FormServlet.java
+## FormServlet.java
+
 ```java
 package com.ejemplo.servlets;
 
@@ -108,7 +103,7 @@ import javax.sql.DataSource;
 public class FormServlet extends HttpServlet {
 
     private DataSource dataSource;
-
+ 
     @Override
     public void init() throws ServletException {
         try {
@@ -146,7 +141,8 @@ public class FormServlet extends HttpServlet {
 }
 ```
 
-### index.html
+## index.html
+
 ```html
 <!DOCTYPE html>
 <html>
@@ -165,7 +161,8 @@ public class FormServlet extends HttpServlet {
 </html>
 ```
 
-### data.jsp
+## data.jsp
+
 ```jsp
 <%@ page import="java.sql.*, javax.sql.DataSource, javax.naming.*" %>
 <!DOCTYPE html>
@@ -212,7 +209,8 @@ public class FormServlet extends HttpServlet {
 </html>
 ```
 
-### web.xml
+## web.xml
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
@@ -234,8 +232,6 @@ public class FormServlet extends HttpServlet {
 </web-app>
 ```
 
----
-
 # 6. Compilación y Despliegue
 
 ```bash
@@ -251,12 +247,25 @@ jar cvf ../../../app.war *
 asadmin deploy --force=true ../../../app.war
 ```
 
----
-
 # 7. Verificación Final
 
 Accede a:
 
-- Formulario: `https://TU_CODESPACE-8080.app.github.dev/app/index.html`
-- Lista de usuarios: `https://TU_CODESPACE-8080.app.github.dev/app/data.jsp`
+- Formulario: https://TU_CODESPACE-8080.app.github.dev/app/index.html
+- Lista de usuarios: https://TU_CODESPACE-8080.app.github.dev/app/data.jsp
+
+# 8. Actualización Manual del WAR
+
+En caso de problemas, corregir el código y ejecutar el siguiente bloque desde la raíz del proyecto:
+
+Este bloque compila el codigo de java y lo carga al servidor de glassfish
+
+```bash
+asadmin stop-domain domain1
+javac -cp "$GLASSFISH_HOME/glassfish/modules/*" src/main/java/com/ejemplo/servlets/FormServlet.java -d src/main/webapp/WEB-INF/classes
+cd src/main/webapp
+jar cvf ../../../app.war *
+cp ../../../app.war $GLASSFISH_HOME/glassfish/domains/domain1/autodeploy/
+asadmin start-domain domain1
+```
 
